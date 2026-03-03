@@ -28,6 +28,7 @@ jobs:
           node-version: '20'
           cache: npm
       - run: npm ci
+      - run: npm run test:unit
       - run: npm run coverage
       - name: Upload API coverage
         if: always()
@@ -41,3 +42,47 @@ jobs:
         with:
           name: ui-coverage
           path: apps/ui/coverage
+
+  component-tests:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      MONGO_URL: ${{ secrets.MONGO_URL }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npm run test:component
+
+  contract-tests:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      MONGO_URL: ${{ secrets.MONGO_URL }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npm run test:contract
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npm run test:integration

@@ -7,18 +7,10 @@ jest.mock('../../services/auth.service', () => ({
 const request = require('supertest');
 const app = require('../../app');
 const authService = require('../../services/auth.service');
-const { signAccessToken } = require('../../utils/jwt');
 const { conflict, unauthorized } = require('../../utils/errors');
+const { makeToken } = require('../helpers/tokens');
 
-function makeToken({ sub = 'u1', role = 'user', email = 'user@example.com' } = {}) {
-  return signAccessToken({
-    _id: sub,
-    role,
-    email,
-  });
-}
-
-describe('HTTP /auth + /me', () => {
+describe('component HTTP /auth + /me', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });

@@ -8,24 +8,18 @@ Demo e-commerce project:
 
 ## Quick Start
 
-1. Copy environment variables for Docker Compose:
-
-```bash
-cp .env.example .env
-```
-
-2. Start API and MongoDB:
+1. Start API and MongoDB:
 
 ```bash
 docker compose up --build
 ```
 
-3. Check API:
+2. Check API:
 
 - Health: [http://localhost:4000/health](http://localhost:4000/health)
 - Docs: [http://localhost:4000/docs](http://localhost:4000/docs)
 
-4. (Optional) Start UI:
+3. (Optional) Start UI:
 
 ```bash
 cd apps/ui
@@ -35,14 +29,11 @@ npm run dev
 
 UI: [http://localhost:5173](http://localhost:5173)
 
-## Run API Locally (Without Docker)
+## Configuration
 
-```bash
-cd apps/api
-cp .env.example .env
-npm i
-npm run dev
-```
+- Root [`.env.example`](/Users/alexkarpinski/Documents/FakeShop/.env.example) documents all API and UI variables.
+- API gets runtime environment from `docker-compose.yml`; you usually do not need a local `.env` file for API.
+- UI uses `VITE_API_URL`; set it in [apps/ui/.env.example](/Users/alexkarpinski/Documents/FakeShop/apps/ui/.env.example) (copy to `apps/ui/.env`) or pass it as an environment variable.
 
 ## Project Structure
 
@@ -88,7 +79,24 @@ npm run coverage
 
 - API unit/component tests: Jest + supertest with mocked services (`jest.mock`), no real MongoDB.
 - UI unit tests: Vitest + Testing Library.
-- API coverage excludes `src/services/**` because services are mocked in endpoint tests.
+
+## Test Pyramid (API)
+
+Unit tests:
+- Scope: pure utils + service logic with mocked dependencies.
+- Command: `npm run test:unit`
+
+Component tests:
+- Scope: HTTP boundary via supertest (`app`) with mocked services, real auth middleware/RBAC.
+- Command: `npm run test:component`
+
+Contract tests:
+- Scope: OpenAPI spec validation and schema stability checks.
+- Command: `npm run test:contract`
+
+Integration tests:
+- Scope: full API + real MongoDB with Testcontainers (no service/model mocks).
+- Command: `npm run test:integration`
 
 Coverage reports:
 

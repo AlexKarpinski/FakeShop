@@ -3,6 +3,7 @@ const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const { logCheckout } = require('./audit.service');
 const { notFound, conflict, HttpError } = require('../utils/errors');
+const { computeTotal } = require('../utils/cartTotals');
 
 function isValidObjectId(id) {
   return mongoose.Types.ObjectId.isValid(id);
@@ -108,7 +109,7 @@ async function toCartComputation(cart) {
     return acc;
   }, []);
 
-  const total = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const total = computeTotal(items);
 
   return {
     items,
