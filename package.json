@@ -11,7 +11,10 @@
     "lint:ui": "npm -w apps/ui run lint",
     "test:unit": "npm run test:unit:api && npm run test:unit:ui",
     "test:unit:api": "npm -w apps/api run test:unit",
-    "test:unit:ui": "npm -w apps/ui run test:unit"
+    "test:unit:ui": "npm -w apps/ui run test:unit",
+    "coverage": "npm run coverage:api && npm run coverage:ui",
+    "coverage:api": "npm -w apps/api run coverage",
+    "coverage:ui": "npm -w apps/ui run coverage"
   },
   "devDependencies": {
     "eslint": "^8.57.1",

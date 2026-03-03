@@ -24,4 +24,16 @@ jobs:
           node-version: '20'
           cache: npm
       - run: npm ci
-      - run: npm run test:unit
+      - run: npm run coverage
+      - name: Upload API coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-coverage
+          path: apps/api/coverage
+      - name: Upload UI coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-coverage
+          path: apps/ui/coverage

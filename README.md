@@ -218,12 +218,19 @@ Run from repository root:
 ```bash
 npm run lint
 npm run test:unit
+npm run coverage
 ```
 
 Notes:
 
 - API endpoint tests are component/unit-style via `supertest` against the Express app with mocked services (`jest.mock`), so no real MongoDB is used.
+- API coverage excludes `src/services/**` because those modules are mocked in endpoint tests.
 - UI unit tests run with Vitest + jsdom.
+
+Coverage outputs:
+
+- API LCOV report: `apps/api/coverage/lcov-report/index.html`
+- UI LCOV report: `apps/ui/coverage/lcov-report/index.html`
 
 ## Test Helpers (`/test/*`)
 

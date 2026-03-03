@@ -4,3 +4,4 @@ dist
 build
 mongo_data
 *.log
+coverage
