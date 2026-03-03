@@ -1,0 +1,43 @@
+name: PR Checks
+
+on:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      MONGO_URL: ${{ secrets.MONGO_URL }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npm run coverage
+      - name: Upload API coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-coverage
+          path: apps/api/coverage
+      - name: Upload UI coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-coverage
+          path: apps/ui/coverage

@@ -1,3 +1,8 @@
+const path = require('path');
+const dotenv = require('dotenv');
+
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
 const DEFAULT_PORT = 4000;
 const DEFAULT_NODE_ENV = 'development';
 
@@ -8,7 +13,7 @@ const config = {
   nodeEnv,
   isTest: nodeEnv === 'test',
   mongoUrl: process.env.MONGO_URL,
-  jwtSecret: process.env.JWT_SECRET || (nodeEnv !== 'production' ? 'change-me' : undefined),
+  jwtSecret: process.env.JWT_SECRET,
 };
 
 if (!config.mongoUrl) {

@@ -1,10 +1,5 @@
 const Product = require('../models/Product');
-
-function createHttpError(statusCode, message) {
-  const error = new Error(message);
-  error.statusCode = statusCode;
-  return error;
-}
+const { notFound } = require('../utils/errors');
 
 function toProductResponse(product) {
   return {
@@ -49,7 +44,7 @@ async function updateProduct(productId, patch) {
   ).lean();
 
   if (!product) {
-    throw createHttpError(404, 'Product not found');
+    throw notFound('Product not found');
   }
 
   return toProductResponse(product);
@@ -59,7 +54,7 @@ async function deleteProduct(productId) {
   const deleted = await Product.findByIdAndDelete(productId).lean();
 
   if (!deleted) {
-    throw createHttpError(404, 'Product not found');
+    throw notFound('Product not found');
   }
 }
 

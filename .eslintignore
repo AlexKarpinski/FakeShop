@@ -1,8 +1,4 @@
 node_modules
-.env
-**/.env
 dist
 build
-mongo_data
-*.log
 coverage
