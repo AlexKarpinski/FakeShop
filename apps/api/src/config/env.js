@@ -6,6 +6,7 @@ const nodeEnv = process.env.NODE_ENV || DEFAULT_NODE_ENV;
 const config = {
   port: Number(process.env.PORT) || DEFAULT_PORT,
   nodeEnv,
+  isTest: nodeEnv === 'test',
   mongoUrl: process.env.MONGO_URL,
   jwtSecret: process.env.JWT_SECRET || (nodeEnv !== 'production' ? 'change-me' : undefined),
 };
