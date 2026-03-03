@@ -1,4 +1,5 @@
 const productsService = require('../services/products.service');
+const parseProductsQuery = require('../utils/productsQuery');
 
 function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim().length > 0;
@@ -13,7 +14,8 @@ function isValidStock(value) {
 }
 
 async function listProducts(req, res) {
-  const products = await productsService.listProducts();
+  const query = parseProductsQuery(req.query);
+  const products = await productsService.listProducts(query);
   return res.status(200).json(products);
 }
 

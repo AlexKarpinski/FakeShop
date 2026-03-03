@@ -15,8 +15,19 @@ function toProductResponse(product) {
   };
 }
 
-async function listProducts() {
-  const products = await Product.find().sort({ createdAt: 1 }).lean();
+async function listProducts(options = {}) {
+  const {
+    filter = {},
+    sort = { createdAt: -1, _id: -1 },
+    limit = 50,
+    offset = 0,
+  } = options;
+
+  const products = await Product.find(filter)
+    .sort(sort)
+    .skip(offset)
+    .limit(limit)
+    .lean();
   return products.map(toProductResponse);
 }
 

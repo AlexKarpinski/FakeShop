@@ -27,6 +27,11 @@ Expected response:
 {"status":"ok"}
 ```
 
+## API Docs
+
+- Swagger UI: [http://localhost:4000/docs](http://localhost:4000/docs)
+- OpenAPI JSON: [http://localhost:4000/openapi.json](http://localhost:4000/openapi.json)
+
 ## Run UI (Vite)
 
 Keep the API running on port `4000` (using `docker compose up --build`), then in a second terminal:
@@ -113,6 +118,32 @@ curl -X GET http://localhost:4000/cart \
 
 curl -X POST http://localhost:4000/cart/checkout \
   -H "Authorization: Bearer $USER_TOKEN"
+```
+
+### Product discovery queries
+
+Search by name:
+
+```bash
+curl "http://localhost:4000/products?q=Product"
+```
+
+Filter by price range:
+
+```bash
+curl "http://localhost:4000/products?minPrice=20&maxPrice=80"
+```
+
+Only in-stock products:
+
+```bash
+curl "http://localhost:4000/products?inStockMin=1"
+```
+
+Sort by price ascending:
+
+```bash
+curl "http://localhost:4000/products?sort=price&order=asc"
 ```
 
 ## Test Helpers (`/test/*`)
