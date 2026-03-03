@@ -1,12 +1,13 @@
 # Fake Shop
 
-Express + MongoDB demo API for auth, products, and cart flows.
+Express + MongoDB demo API with a thin React + Vite UI.
 
 ## Prerequisites
 
 - Docker (with Docker Compose)
+- Node.js 20+ (for running UI locally)
 
-## Run
+## Run API
 
 ```bash
 docker compose up --build
@@ -26,11 +27,26 @@ Expected response:
 {"status":"ok"}
 ```
 
+## Run UI (Vite)
+
+Keep the API running on port `4000` (using `docker compose up --build`), then in a second terminal:
+
+```bash
+cd apps/ui
+npm i
+npm run dev
+```
+
+UI default URL: `http://localhost:5173`
+
+UI API URL is configured by `VITE_API_URL`.
+A sample file is available at `apps/ui/.env.example`.
+
 ## Stop
 
-Press `Ctrl+C` in the terminal where Compose is running.
+Press `Ctrl+C` in the terminal where Compose or Vite is running.
 
-## Environment Variables
+## Environment Variables (API)
 
 The API reads these environment variables:
 
