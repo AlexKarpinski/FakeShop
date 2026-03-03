@@ -8,18 +8,10 @@ jest.mock('../../services/products.service', () => ({
 const request = require('supertest');
 const app = require('../../app');
 const productsService = require('../../services/products.service');
-const { signAccessToken } = require('../../utils/jwt');
 const { notFound } = require('../../utils/errors');
+const { makeToken } = require('../helpers/tokens');
 
-function makeToken({ sub = 'u1', role = 'user', email = 'user@example.com' } = {}) {
-  return signAccessToken({
-    _id: sub,
-    role,
-    email,
-  });
-}
-
-describe('HTTP /products', () => {
+describe('component HTTP /products', () => {
   const adminToken = makeToken({ sub: 'a1', role: 'admin', email: 'admin@example.com' });
   const userToken = makeToken({ sub: 'u1', role: 'user', email: 'user@example.com' });
 

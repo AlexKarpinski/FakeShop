@@ -8,18 +8,10 @@ jest.mock('../../services/cart.service', () => ({
 const request = require('supertest');
 const app = require('../../app');
 const cartService = require('../../services/cart.service');
-const { signAccessToken } = require('../../utils/jwt');
 const { conflict } = require('../../utils/errors');
+const { makeToken } = require('../helpers/tokens');
 
-function makeToken({ sub = 'u1', role = 'user', email = 'user@example.com' } = {}) {
-  return signAccessToken({
-    _id: sub,
-    role,
-    email,
-  });
-}
-
-describe('HTTP /cart', () => {
+describe('component HTTP /cart', () => {
   const userToken = makeToken({ sub: 'u1', role: 'user', email: 'user@example.com' });
 
   beforeEach(() => {

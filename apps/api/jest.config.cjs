@@ -1,6 +1,10 @@
 module.exports = {
   testEnvironment: 'node',
-  testMatch: ['**/__tests__/**/*.test.js'],
+  testMatch: [
+    '**/__tests__/unit/**/*.unit.test.js',
+    '**/__tests__/component/**/*.component.test.js',
+    '**/__tests__/contract/**/*.contract.test.js',
+  ],
   setupFiles: ['<rootDir>/src/__tests__/setupEnv.js'],
   clearMocks: true,
   collectCoverage: true,
@@ -9,7 +13,6 @@ module.exports = {
     '!src/index.js',
     '!src/config/**',
     '!src/models/**',
-    '!src/services/**',
     '!src/docs/**',
     '!src/seed/**',
   ],

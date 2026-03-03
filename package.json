@@ -12,6 +12,9 @@
     "test:unit": "npm run test:unit:api && npm run test:unit:ui",
     "test:unit:api": "npm -w apps/api run test:unit",
     "test:unit:ui": "npm -w apps/ui run test:unit",
+    "test:component": "npm -w apps/api run test:component",
+    "test:integration": "npm -w apps/api run test:integration",
+    "test:contract": "npm -w apps/api run test:contract",
     "coverage": "npm run coverage:api && npm run coverage:ui",
     "coverage:api": "npm -w apps/api run coverage",
     "coverage:ui": "npm -w apps/ui run coverage"

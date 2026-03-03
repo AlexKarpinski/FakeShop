@@ -79,7 +79,24 @@ npm run coverage
 
 - API unit/component tests: Jest + supertest with mocked services (`jest.mock`), no real MongoDB.
 - UI unit tests: Vitest + Testing Library.
-- API coverage excludes `src/services/**` because services are mocked in endpoint tests.
+
+## Test Pyramid (API)
+
+Unit tests:
+- Scope: pure utils + service logic with mocked dependencies.
+- Command: `npm run test:unit`
+
+Component tests:
+- Scope: HTTP boundary via supertest (`app`) with mocked services, real auth middleware/RBAC.
+- Command: `npm run test:component`
+
+Contract tests:
+- Scope: OpenAPI spec validation and schema stability checks.
+- Command: `npm run test:contract`
+
+Integration tests:
+- Scope: full API + real MongoDB with Testcontainers (no service/model mocks).
+- Command: `npm run test:integration`
 
 Coverage reports:
 
