@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/client';
-import { clearToken } from '../auth/auth';
+import { clearToken, decodeToken } from '../auth/auth';
 
 function Cart() {
   const navigate = useNavigate();
+  const authInfo = decodeToken();
+  const isAdmin = authInfo?.role === 'admin';
 
   const [cart, setCart] = useState({ items: [], total: 0 });
   const [loading, setLoading] = useState(true);
@@ -58,6 +60,23 @@ function Cart() {
   function handleLogout() {
     clearToken();
     navigate('/login', { replace: true });
+  }
+
+  if (isAdmin) {
+    return (
+      <section className="page-card">
+        <div className="page-header">
+          <h2>Your Cart</h2>
+          <div className="row">
+            <Link to="/admin/products">Admin</Link>
+            <button type="button" onClick={handleLogout}>
+              Logout
+            </button>
+          </div>
+        </div>
+        <p>Admins cannot use cart/checkout. Use Admin → Products management.</p>
+      </section>
+    );
   }
 
   return (

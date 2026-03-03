@@ -135,7 +135,6 @@ function AdminProducts() {
         <h2>Admin Products</h2>
         <div className="row">
           <Link to="/products">Products</Link>
-          <Link to="/cart">Cart</Link>
           <button type="button" onClick={handleLogout}>
             Logout
           </button>

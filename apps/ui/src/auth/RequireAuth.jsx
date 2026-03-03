@@ -1,16 +1,19 @@
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { decodeToken, isLoggedIn } from './auth';
 
-function RequireAuth({ children, requireRole }) {
+function RequireAuth({ children, requireRole, forbidRole, forbidRedirectTo }) {
   const location = useLocation();
+  const payload = decodeToken();
 
   if (!isLoggedIn()) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
-  if (requireRole) {
-    const payload = decodeToken();
+  if (forbidRole && payload?.role === forbidRole) {
+    return <Navigate to={forbidRedirectTo || '/products'} replace />;
+  }
 
+  if (requireRole) {
     if (!payload || payload.role !== requireRole) {
       return (
         <section className="page-card">

@@ -17,7 +17,7 @@ function App() {
         <Route
           path="/cart"
           element={
-            <RequireAuth>
+            <RequireAuth forbidRole="admin" forbidRedirectTo="/admin/products">
               <Cart />
             </RequireAuth>
           }

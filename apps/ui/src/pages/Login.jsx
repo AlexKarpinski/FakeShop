@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/client';
-import { setToken } from '../auth/auth';
+import { decodeToken, setToken } from '../auth/auth';
 
 const ADMIN_DEFAULTS = {
   email: 'admin@example.com',
@@ -42,7 +42,13 @@ function Login() {
       });
 
       setToken(data.token);
-      navigate(redirectTo, { replace: true });
+      const authInfo = decodeToken();
+
+      if (authInfo?.role === 'admin') {
+        navigate('/admin/products', { replace: true });
+      } else {
+        navigate(redirectTo, { replace: true });
+      }
     } catch (err) {
       setError(err.message);
     } finally {

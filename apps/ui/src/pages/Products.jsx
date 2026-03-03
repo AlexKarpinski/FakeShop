@@ -109,6 +109,11 @@ function Products() {
     setMessage('');
     setError('');
 
+    if (isAdmin) {
+      setMessage('Admin: cart disabled');
+      return;
+    }
+
     if (!isLoggedIn()) {
       navigate('/login');
       return;
@@ -161,8 +166,8 @@ function Products() {
       <div className="page-header">
         <h2>Products</h2>
         <div className="row">
-          <Link to="/cart">Go to cart</Link>
           {isAdmin ? <Link to="/admin/products">Admin</Link> : null}
+          {!isAdmin ? <Link to="/cart">Go to cart</Link> : null}
           {isLoggedIn() ? (
             <button type="button" onClick={handleLogout}>
               Logout
@@ -271,9 +276,15 @@ function Products() {
                 <td>${Number(product.price).toFixed(2)}</td>
                 <td>{product.inStock}</td>
                 <td>
-                  <button type="button" onClick={() => handleAddToCart(product.id)}>
-                    Add to cart
-                  </button>
+                  {isAdmin ? (
+                    <button type="button" disabled>
+                      Admin: cart disabled
+                    </button>
+                  ) : (
+                    <button type="button" onClick={() => handleAddToCart(product.id)}>
+                      Add to cart
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
