@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { apiFetch } from '../api/client';
-import { clearToken, isLoggedIn } from '../auth/auth';
+import { clearToken, decodeToken, isLoggedIn } from '../auth/auth';
 
 const DEFAULT_FILTERS = {
   q: '',
@@ -59,6 +59,8 @@ function buildSearchParams(filters) {
 function Products() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const authInfo = decodeToken();
+  const isAdmin = authInfo?.role === 'admin';
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -107,6 +109,11 @@ function Products() {
     setMessage('');
     setError('');
 
+    if (isAdmin) {
+      setMessage('Admin: cart disabled');
+      return;
+    }
+
     if (!isLoggedIn()) {
       navigate('/login');
       return;
@@ -117,6 +124,11 @@ function Products() {
         method: 'POST',
         body: { productId, qty: 1 },
       });
+
+      const path = queryString ? `/products?${queryString}` : '/products';
+      const refreshed = await apiFetch(path, { auth: false });
+      setProducts(Array.isArray(refreshed) ? refreshed : []);
+
       setMessage('Added');
     } catch (err) {
       setError(err.message);
@@ -154,13 +166,17 @@ function Products() {
       <div className="page-header">
         <h2>Products</h2>
         <div className="row">
-          <Link to="/cart">Go to cart</Link>
+          {isAdmin ? <Link to="/admin/products">Admin</Link> : null}
+          {!isAdmin ? <Link to="/cart">Go to cart</Link> : null}
           {isLoggedIn() ? (
             <button type="button" onClick={handleLogout}>
               Logout
             </button>
           ) : (
-            <Link to="/login">Login</Link>
+            <>
+              <Link to="/signup">Sign up</Link>
+              <Link to="/login">Login</Link>
+            </>
           )}
         </div>
       </div>
@@ -260,9 +276,15 @@ function Products() {
                 <td>${Number(product.price).toFixed(2)}</td>
                 <td>{product.inStock}</td>
                 <td>
-                  <button type="button" onClick={() => handleAddToCart(product.id)}>
-                    Add to cart
-                  </button>
+                  {isAdmin ? (
+                    <button type="button" disabled>
+                      Admin: cart disabled
+                    </button>
+                  ) : (
+                    <button type="button" onClick={() => handleAddToCart(product.id)}>
+                      Add to cart
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

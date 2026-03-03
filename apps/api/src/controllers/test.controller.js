@@ -7,7 +7,7 @@ async function reset(req, res) {
 }
 
 async function seed(req, res) {
-  const result = await seedData();
+  const result = await seedData(req.body || {});
   return res.status(200).json(result);
 }
 

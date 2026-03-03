@@ -35,6 +35,45 @@ async function createProduct(req, res) {
   return res.status(201).json(product);
 }
 
+async function updateProduct(req, res) {
+  const { id } = req.params;
+
+  if (!isNonEmptyString(id)) {
+    return res.status(400).json({ error: 'Product id is required' });
+  }
+
+  const { name, price, inStock } = req.body || {};
+  const patch = {};
+
+  if (name !== undefined) {
+    if (!isNonEmptyString(name)) {
+      return res.status(400).json({ error: 'Invalid product payload' });
+    }
+    patch.name = name.trim();
+  }
+
+  if (price !== undefined) {
+    if (!isValidPrice(price)) {
+      return res.status(400).json({ error: 'Invalid product payload' });
+    }
+    patch.price = price;
+  }
+
+  if (inStock !== undefined) {
+    if (!isValidStock(inStock)) {
+      return res.status(400).json({ error: 'Invalid product payload' });
+    }
+    patch.inStock = inStock;
+  }
+
+  if (Object.keys(patch).length === 0) {
+    return res.status(400).json({ error: 'At least one field (name, price, inStock) is required' });
+  }
+
+  const product = await productsService.updateProduct(id, patch);
+  return res.status(200).json(product);
+}
+
 async function deleteProduct(req, res) {
   const { id } = req.params;
 
@@ -49,5 +88,6 @@ async function deleteProduct(req, res) {
 module.exports = {
   listProducts,
   createProduct,
+  updateProduct,
   deleteProduct,
 };

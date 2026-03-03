@@ -36,6 +36,10 @@ async function removeItem(req, res) {
 }
 
 async function checkout(req, res) {
+  if (req.user.role === 'admin') {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
   const result = await cartService.checkout(req.user.id);
   return res.status(200).json(result);
 }

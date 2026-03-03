@@ -8,6 +8,7 @@ const router = Router();
 
 router.get('/', asyncHandler(productsController.listProducts));
 router.post('/', authRequired, adminRequired, asyncHandler(productsController.createProduct));
+router.patch('/:id', authRequired, adminRequired, asyncHandler(productsController.updateProduct));
 router.delete('/:id', authRequired, adminRequired, asyncHandler(productsController.deleteProduct));
 
 module.exports = router;

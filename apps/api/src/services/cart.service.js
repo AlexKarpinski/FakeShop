@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const { logCheckout } = require('./audit.service');
@@ -8,19 +9,97 @@ function createHttpError(statusCode, message) {
   return error;
 }
 
-async function toCartResponse(cart) {
-  if (!cart || !Array.isArray(cart.items) || cart.items.length === 0) {
-    return { items: [], total: 0 };
+function isValidObjectId(id) {
+  return mongoose.Types.ObjectId.isValid(id);
+}
+
+function mergeItems(items = []) {
+  const merged = new Map();
+
+  for (const item of items) {
+    const productId = String(item.productId);
+    const qty = Number(item.qty) || 0;
+
+    if (!productId || qty <= 0) {
+      continue;
+    }
+
+    merged.set(productId, (merged.get(productId) || 0) + qty);
   }
 
-  const productIds = cart.items.map((item) => item.productId);
+  return Array.from(merged.entries()).map(([productId, qty]) => ({ productId, qty }));
+}
+
+function applyMergedItems(cart) {
+  const mergedItems = mergeItems(cart.items);
+  cart.items = mergedItems.map((item) => ({
+    productId: item.productId,
+    qty: item.qty,
+  }));
+}
+
+async function reserveStock(productId, qty) {
+  if (!isValidObjectId(productId)) {
+    throw createHttpError(404, 'Product not found');
+  }
+
+  const reserveResult = await Product.updateOne(
+    {
+      _id: productId,
+      inStock: { $gte: qty },
+    },
+    {
+      $inc: { inStock: -qty },
+    }
+  );
+
+  if (reserveResult.modifiedCount === 1) {
+    return;
+  }
+
+  const productExists = await Product.exists({ _id: productId });
+
+  if (!productExists) {
+    throw createHttpError(404, 'Product not found');
+  }
+
+  throw createHttpError(409, 'Not enough stock');
+}
+
+async function releaseStock(productId, qty) {
+  if (!isValidObjectId(productId) || !Number.isInteger(qty) || qty <= 0) {
+    return;
+  }
+
+  try {
+    await Product.updateOne(
+      { _id: productId },
+      {
+        $inc: { inStock: qty },
+      }
+    );
+  } catch (error) {
+    console.error('Failed to release reserved stock:', error.message);
+  }
+}
+
+async function toCartComputation(cart) {
+  if (!cart || !Array.isArray(cart.items) || cart.items.length === 0) {
+    return { items: [], total: 0, missingProducts: 0 };
+  }
+
+  const mergedItems = mergeItems(cart.items);
+  const productIds = mergedItems.map((item) => item.productId);
   const products = await Product.find({ _id: { $in: productIds } }).lean();
   const productsById = new Map(products.map((product) => [String(product._id), product]));
 
-  const items = cart.items.reduce((acc, item) => {
-    const product = productsById.get(String(item.productId));
+  let missingProducts = 0;
+
+  const items = mergedItems.reduce((acc, item) => {
+    const product = productsById.get(item.productId);
 
     if (!product) {
+      missingProducts += 1;
       return acc;
     }
 
@@ -39,39 +118,60 @@ async function toCartResponse(cart) {
   return {
     items,
     total,
+    missingProducts,
   };
 }
 
 async function getCart(userId) {
   const cart = await Cart.findOne({ userId });
-  return toCartResponse(cart);
+  const computed = await toCartComputation(cart);
+
+  return {
+    items: computed.items,
+    total: computed.total,
+  };
 }
 
 async function addItem(userId, { productId, qty }) {
-  const product = await Product.findById(productId).lean();
+  await reserveStock(productId, qty);
 
-  if (!product) {
-    throw createHttpError(404, 'Product not found');
+  let cart;
+
+  try {
+    cart = await Cart.findOne({ userId });
+
+    if (!cart) {
+      cart = new Cart({ userId, items: [] });
+    }
+
+    applyMergedItems(cart);
+
+    const existingItem = cart.items.find((item) => String(item.productId) === String(productId));
+
+    if (existingItem) {
+      existingItem.qty += qty;
+    } else {
+      cart.items.push({ productId, qty });
+    }
+
+    cart.updatedAt = new Date();
+    await cart.save();
+  } catch (error) {
+    await releaseStock(productId, qty);
+
+    if (error.statusCode) {
+      throw error;
+    }
+
+    throw createHttpError(500, 'Failed to update cart');
   }
 
-  let cart = await Cart.findOne({ userId });
+  const computed = await toCartComputation(cart);
 
-  if (!cart) {
-    cart = new Cart({ userId, items: [] });
-  }
-
-  const existingItem = cart.items.find((item) => String(item.productId) === String(product._id));
-
-  if (existingItem) {
-    existingItem.qty = qty;
-  } else {
-    cart.items.push({ productId: product._id, qty });
-  }
-
-  cart.updatedAt = new Date();
-  await cart.save();
-
-  return toCartResponse(cart);
+  return {
+    items: computed.items,
+    total: computed.total,
+  };
 }
 
 async function removeItem(userId, productId) {
@@ -81,27 +181,62 @@ async function removeItem(userId, productId) {
     return { items: [], total: 0 };
   }
 
-  cart.items = cart.items.filter((item) => String(item.productId) !== String(productId));
+  applyMergedItems(cart);
+
+  const index = cart.items.findIndex((item) => String(item.productId) === String(productId));
+
+  if (index === -1) {
+    const computed = await toCartComputation(cart);
+    return {
+      items: computed.items,
+      total: computed.total,
+    };
+  }
+
+  const [removedItem] = cart.items.splice(index, 1);
+
   cart.updatedAt = new Date();
   await cart.save();
 
-  return toCartResponse(cart);
+  await releaseStock(removedItem.productId, removedItem.qty);
+
+  const computed = await toCartComputation(cart);
+
+  return {
+    items: computed.items,
+    total: computed.total,
+  };
 }
 
 async function checkout(userId) {
   const cart = await Cart.findOne({ userId });
-  const cartResponse = await toCartResponse(cart);
 
-  const itemsCount = cartResponse.items.reduce((sum, item) => sum + item.qty, 0);
-  const total = cartResponse.total;
+  if (!cart || !Array.isArray(cart.items) || cart.items.length === 0) {
+    await logCheckout({ userId, itemsCount: 0, total: 0 });
+
+    return {
+      ok: true,
+      itemsCount: 0,
+      total: 0,
+    };
+  }
+
+  applyMergedItems(cart);
+
+  const computed = await toCartComputation(cart);
+
+  if (computed.missingProducts > 0) {
+    throw createHttpError(409, 'Cart contains unavailable product');
+  }
+
+  const itemsCount = computed.items.reduce((sum, item) => sum + item.qty, 0);
+  const total = computed.total;
 
   await logCheckout({ userId, itemsCount, total });
 
-  if (cart) {
-    cart.items = [];
-    cart.updatedAt = new Date();
-    await cart.save();
-  }
+  cart.items = [];
+  cart.updatedAt = new Date();
+  await cart.save();
 
   return {
     ok: true,
