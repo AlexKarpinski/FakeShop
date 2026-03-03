@@ -1,6 +1,6 @@
 # Fake Shop
 
-Demo-проект интернет-магазина:
+Demo e-commerce project:
 
 - API: Node.js + Express + MongoDB (Mongoose)
 - UI: React + Vite
@@ -8,24 +8,24 @@ Demo-проект интернет-магазина:
 
 ## Quick Start
 
-1. Скопируйте переменные окружения для Docker Compose:
+1. Copy environment variables for Docker Compose:
 
 ```bash
 cp .env.example .env
 ```
 
-2. Запустите API и MongoDB:
+2. Start API and MongoDB:
 
 ```bash
 docker compose up --build
 ```
 
-3. Проверьте API:
+3. Check API:
 
 - Health: [http://localhost:4000/health](http://localhost:4000/health)
 - Docs: [http://localhost:4000/docs](http://localhost:4000/docs)
 
-4. (Опционально) Запустите UI:
+4. (Optional) Start UI:
 
 ```bash
 cd apps/ui
@@ -35,7 +35,7 @@ npm run dev
 
 UI: [http://localhost:5173](http://localhost:5173)
 
-## Локальный запуск API без Docker
+## Run API Locally (Without Docker)
 
 ```bash
 cd apps/api
@@ -69,15 +69,15 @@ npm run dev
 
 ## API Layers
 
-- `routes` — только маршрутизация и middleware-цепочки.
-- `controllers` — тонкий слой: валидация/парсинг + вызов сервисов + HTTP-ответ.
-- `services` — бизнес-логика.
-- `models` — Mongoose-схемы и работа с коллекциями.
-- `middlewares`/`utils` — переиспользуемые компоненты.
+- `routes` — route definitions and middleware chains.
+- `controllers` — thin layer: input validation/parsing, service calls, HTTP responses.
+- `services` — business logic.
+- `models` — Mongoose schemas and collection operations.
+- `middlewares` / `utils` — reusable cross-cutting helpers.
 
 ## Tests & Quality Gates
 
-Из корня репозитория:
+From the repository root:
 
 ```bash
 npm ci
@@ -86,11 +86,18 @@ npm run test:unit
 npm run coverage
 ```
 
-- API unit/component tests: Jest + supertest, сервисы мокируются (`jest.mock`), без реальной MongoDB.
+- API unit/component tests: Jest + supertest with mocked services (`jest.mock`), no real MongoDB.
 - UI unit tests: Vitest + Testing Library.
-- API coverage excludes `src/services/**` because those modules are mocked in endpoint tests.
+- API coverage excludes `src/services/**` because services are mocked in endpoint tests.
 
 Coverage reports:
 
 - `apps/api/coverage/lcov-report/index.html`
 - `apps/ui/coverage/lcov-report/index.html`
+
+## GitHub Secrets (Required)
+
+Add these repository secrets for CI:
+
+1. `MONGO_URL`
+2. `JWT_SECRET`
