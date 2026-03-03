@@ -36,6 +36,25 @@ async function createProduct({ name, price, inStock }) {
   return toProductResponse(product);
 }
 
+async function updateProduct(productId, patch) {
+  const product = await Product.findByIdAndUpdate(
+    productId,
+    {
+      $set: patch,
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  ).lean();
+
+  if (!product) {
+    throw createHttpError(404, 'Product not found');
+  }
+
+  return toProductResponse(product);
+}
+
 async function deleteProduct(productId) {
   const deleted = await Product.findByIdAndDelete(productId).lean();
 
@@ -47,5 +66,6 @@ async function deleteProduct(productId) {
 module.exports = {
   listProducts,
   createProduct,
+  updateProduct,
   deleteProduct,
 };

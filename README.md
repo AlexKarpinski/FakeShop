@@ -99,6 +99,22 @@ curl -X POST http://localhost:4000/products \
   -d '{"name":"Keyboard","price":99.99,"inStock":12}'
 ```
 
+Update product (admin):
+
+```bash
+curl -X PATCH http://localhost:4000/products/<PRODUCT_ID> \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Keyboard v2","price":109.99,"inStock":8}'
+```
+
+Delete product (admin):
+
+```bash
+curl -X DELETE http://localhost:4000/products/<PRODUCT_ID> \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+```
+
 ### User login, add to cart, checkout
 
 ```bash
@@ -176,6 +192,25 @@ Sort by price ascending:
 curl "http://localhost:4000/products?sort=price&order=asc"
 ```
 
+## Admin UI
+
+- Login as `admin@example.com / admin123`
+- Open [http://localhost:5173/admin/products](http://localhost:5173/admin/products)
+- Admins can create, update, and delete products from this page.
+
+## Signup
+
+- UI route: [http://localhost:5173/signup](http://localhost:5173/signup)
+- Login page includes a link to create a new account.
+
+Register with curl:
+
+```bash
+curl -X POST http://localhost:4000/auth/register \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"newuser@example.com","password":"secret12"}'
+```
+
 ## Test Helpers (`/test/*`)
 
 `/test` routes are mounted only when `NODE_ENV=test`.
@@ -197,4 +232,12 @@ Then call helpers:
 ```bash
 curl -X POST http://localhost:4000/test/reset
 curl -X POST http://localhost:4000/test/seed
+```
+
+Configurable seed options (`reset` must be `true`):
+
+```bash
+curl -X POST http://localhost:4000/test/seed \
+  -H 'Content-Type: application/json' \
+  -d '{"productsCount":5,"stock":1,"priceStart":5,"priceStep":2,"reset":true}'
 ```

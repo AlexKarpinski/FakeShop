@@ -273,6 +273,49 @@ const openapiSpec = swaggerJsdoc({
         },
       },
       '/products/{id}': {
+        patch: {
+          tags: ['Products'],
+          summary: 'Update a product (admin only)',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              required: true,
+              schema: { type: 'string' },
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    name: { type: 'string' },
+                    price: { type: 'number', minimum: 0 },
+                    inStock: { type: 'integer', minimum: 0 },
+                  },
+                  description: 'At least one field is required.',
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Product updated',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/Product' },
+                },
+              },
+            },
+            400: { description: 'Validation error' },
+            401: { description: 'Unauthorized' },
+            403: { description: 'Forbidden' },
+            404: { description: 'Not found' },
+          },
+        },
         delete: {
           tags: ['Products'],
           summary: 'Delete a product (admin only)',
@@ -402,7 +445,76 @@ const openapiSpec = swaggerJsdoc({
               },
             },
             401: { description: 'Unauthorized' },
+            403: { description: 'Forbidden (admin cannot checkout)' },
             409: { description: 'Cart contains unavailable product' },
+          },
+        },
+      },
+      '/test/reset': {
+        post: {
+          tags: ['Test'],
+          summary: 'Reset all collections (test env only)',
+          description: 'Available only when NODE_ENV is test.',
+          responses: {
+            200: {
+              description: 'Reset completed',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      ok: { type: 'boolean' },
+                    },
+                    required: ['ok'],
+                  },
+                },
+              },
+            },
+            404: { description: 'Not found outside test mode' },
+          },
+        },
+      },
+      '/test/seed': {
+        post: {
+          tags: ['Test'],
+          summary: 'Seed deterministic users/products (test env only)',
+          description: 'Available only when NODE_ENV is test.',
+          requestBody: {
+            required: false,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    productsCount: { type: 'integer', minimum: 0, default: 10 },
+                    stock: { type: 'integer', minimum: 0, default: 10 },
+                    priceStart: { type: 'integer', minimum: 0, default: 10 },
+                    priceStep: { type: 'integer', minimum: 0, default: 10 },
+                    reset: { type: 'boolean', default: true },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Seed completed',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      adminEmail: { type: 'string' },
+                      userEmail: { type: 'string' },
+                      productsCount: { type: 'integer' },
+                    },
+                    required: ['adminEmail', 'userEmail', 'productsCount'],
+                  },
+                },
+              },
+            },
+            400: { description: 'Invalid seed options' },
+            404: { description: 'Not found outside test mode' },
           },
         },
       },

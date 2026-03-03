@@ -164,6 +164,20 @@ td {
   width: auto;
 }
 
+.admin-create {
+  margin-bottom: 12px;
+}
+
+.admin-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.admin-actions {
+  align-items: end;
+}
+
 @media (max-width: 640px) {
   th,
   td {

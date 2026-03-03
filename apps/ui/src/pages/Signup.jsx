@@ -1,48 +1,47 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/client';
 import { setToken } from '../auth/auth';
 
-const ADMIN_DEFAULTS = {
-  email: 'admin@example.com',
-  password: 'admin123',
-};
-
-const USER_DEFAULTS = {
-  email: 'user@example.com',
-  password: 'user123',
-};
-
-function Login() {
+function Signup() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const redirectTo = location.state?.from || '/products';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  function fillCredentials(values) {
-    setEmail(values.email);
-    setPassword(values.password);
-    setError('');
-  }
 
   async function handleSubmit(event) {
     event.preventDefault();
     setError('');
+
+    if (!email.trim()) {
+      setError('Email is required');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const data = await apiFetch('/auth/login', {
+      const data = await apiFetch('/auth/register', {
         method: 'POST',
-        body: { email, password },
+        body: { email: email.trim(), password },
         auth: false,
       });
 
       setToken(data.token);
-      navigate(redirectTo, { replace: true });
+      navigate('/products', { replace: true });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -53,20 +52,8 @@ function Login() {
   return (
     <section className="page-card">
       <div className="page-header">
-        <h2>Login</h2>
-        <div className="row">
-          <Link to="/signup">Create account</Link>
-          <Link to="/products">Back to products</Link>
-        </div>
-      </div>
-
-      <div className="row" style={{ marginBottom: '12px' }}>
-        <button type="button" onClick={() => fillCredentials(ADMIN_DEFAULTS)}>
-          Use admin
-        </button>
-        <button type="button" onClick={() => fillCredentials(USER_DEFAULTS)}>
-          Use user
-        </button>
+        <h2>Sign Up</h2>
+        <Link to="/products">Back to products</Link>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -86,18 +73,29 @@ function Login() {
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            required
             minLength={6}
+            required
+          />
+        </label>
+
+        <label>
+          Confirm password
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            minLength={6}
+            required
           />
         </label>
 
         <button className="primary" type="submit" disabled={loading}>
-          {loading ? 'Signing in...' : 'Login'}
+          {loading ? 'Creating account...' : 'Create account'}
         </button>
       </form>
 
       <p style={{ marginTop: '10px' }}>
-        Need an account? <Link to="/signup">Create account</Link>
+        Already have an account? <Link to="/login">Login</Link>
       </p>
 
       {error ? <p className="message error">{error}</p> : null}
@@ -105,4 +103,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default Signup;
