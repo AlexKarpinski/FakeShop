@@ -1,15 +1,10 @@
 const User = require('../models/User');
 const { hashPassword, comparePassword } = require('../utils/hash');
 const { signAccessToken } = require('../utils/jwt');
+const { conflict, unauthorized } = require('../utils/errors');
 
 function normalizeEmail(email) {
   return String(email).trim().toLowerCase();
-}
-
-function createHttpError(statusCode, message) {
-  const error = new Error(message);
-  error.statusCode = statusCode;
-  return error;
 }
 
 async function register({ email, password }) {
@@ -17,7 +12,7 @@ async function register({ email, password }) {
   const existing = await User.findOne({ email: normalizedEmail }).lean();
 
   if (existing) {
-    throw createHttpError(409, 'Email already exists');
+    throw conflict('Email already exists');
   }
 
   const passwordHash = await hashPassword(password);
@@ -37,13 +32,13 @@ async function login({ email, password }) {
   const user = await User.findOne({ email: normalizedEmail });
 
   if (!user) {
-    throw createHttpError(401, 'Invalid credentials');
+    throw unauthorized('Invalid credentials');
   }
 
   const passwordValid = await comparePassword(password, user.passwordHash);
 
   if (!passwordValid) {
-    throw createHttpError(401, 'Invalid credentials');
+    throw unauthorized('Invalid credentials');
   }
 
   return {
@@ -55,7 +50,7 @@ async function getMe(userId) {
   const user = await User.findById(userId).select('email role').lean();
 
   if (!user) {
-    throw createHttpError(401, 'Unauthorized');
+    throw unauthorized('Unauthorized');
   }
 
   return {

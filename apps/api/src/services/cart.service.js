@@ -2,12 +2,7 @@ const mongoose = require('mongoose');
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const { logCheckout } = require('./audit.service');
-
-function createHttpError(statusCode, message) {
-  const error = new Error(message);
-  error.statusCode = statusCode;
-  return error;
-}
+const { notFound, conflict, HttpError } = require('../utils/errors');
 
 function isValidObjectId(id) {
   return mongoose.Types.ObjectId.isValid(id);
@@ -40,7 +35,7 @@ function applyMergedItems(cart) {
 
 async function reserveStock(productId, qty) {
   if (!isValidObjectId(productId)) {
-    throw createHttpError(404, 'Product not found');
+    throw notFound('Product not found');
   }
 
   const reserveResult = await Product.updateOne(
@@ -60,10 +55,10 @@ async function reserveStock(productId, qty) {
   const productExists = await Product.exists({ _id: productId });
 
   if (!productExists) {
-    throw createHttpError(404, 'Product not found');
+    throw notFound('Product not found');
   }
 
-  throw createHttpError(409, 'Not enough stock');
+  throw conflict('Not enough stock');
 }
 
 async function releaseStock(productId, qty) {
@@ -159,11 +154,11 @@ async function addItem(userId, { productId, qty }) {
   } catch (error) {
     await releaseStock(productId, qty);
 
-    if (error.statusCode) {
+    if (error instanceof HttpError) {
       throw error;
     }
 
-    throw createHttpError(500, 'Failed to update cart');
+    throw new Error('Failed to update cart');
   }
 
   const computed = await toCartComputation(cart);
@@ -226,7 +221,7 @@ async function checkout(userId) {
   const computed = await toCartComputation(cart);
 
   if (computed.missingProducts > 0) {
-    throw createHttpError(409, 'Cart contains unavailable product');
+    throw conflict('Cart contains unavailable product');
   }
 
   const itemsCount = computed.items.reduce((sum, item) => sum + item.qty, 0);

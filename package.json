@@ -1,0 +1,21 @@
+{
+  "name": "fake-shop",
+  "private": true,
+  "workspaces": [
+    "apps/api",
+    "apps/ui"
+  ],
+  "scripts": {
+    "lint": "npm run lint:api && npm run lint:ui",
+    "lint:api": "npm -w apps/api run lint",
+    "lint:ui": "npm -w apps/ui run lint",
+    "test:unit": "npm run test:unit:api && npm run test:unit:ui",
+    "test:unit:api": "npm -w apps/api run test:unit",
+    "test:unit:ui": "npm -w apps/ui run test:unit"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^4.6.2"
+  }
+}

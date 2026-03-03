@@ -1,7 +1,7 @@
 const config = require('../config/env');
 
-function errorHandler(err, req, res, next) {
-  let statusCode = err.statusCode || 500;
+function errorHandler(err, req, res, _next) {
+  let statusCode = err.statusCode || err.status || 500;
   let message = err.message || 'Internal Server Error';
 
   if (err.name === 'CastError') {

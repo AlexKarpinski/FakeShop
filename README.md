@@ -211,6 +211,20 @@ curl -X POST http://localhost:4000/auth/register \
   -d '{"email":"newuser@example.com","password":"secret12"}'
 ```
 
+## Quality Gates
+
+Run from repository root:
+
+```bash
+npm run lint
+npm run test:unit
+```
+
+Notes:
+
+- API endpoint tests are component/unit-style via `supertest` against the Express app with mocked services (`jest.mock`), so no real MongoDB is used.
+- UI unit tests run with Vitest + jsdom.
+
 ## Test Helpers (`/test/*`)
 
 `/test` routes are mounted only when `NODE_ENV=test`.
