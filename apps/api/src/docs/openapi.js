@@ -315,7 +315,9 @@ const openapiSpec = swaggerJsdoc({
       '/cart/items': {
         post: {
           tags: ['Cart'],
-          summary: 'Add or update cart item quantity',
+          summary: 'Reserve stock and add quantity to cart item',
+          description:
+            'This endpoint increments quantity by qty (delta add). It does not replace existing qty.',
           security: [{ bearerAuth: [] }],
           requestBody: {
             required: true,
@@ -344,13 +346,14 @@ const openapiSpec = swaggerJsdoc({
             400: { description: 'Validation error' },
             401: { description: 'Unauthorized' },
             404: { description: 'Product not found' },
+            409: { description: 'Not enough stock' },
           },
         },
       },
       '/cart/items/{productId}': {
         delete: {
           tags: ['Cart'],
-          summary: 'Remove product from cart',
+          summary: 'Remove product from cart and release reserved stock',
           security: [{ bearerAuth: [] }],
           parameters: [
             {
@@ -377,7 +380,9 @@ const openapiSpec = swaggerJsdoc({
       '/cart/checkout': {
         post: {
           tags: ['Cart'],
-          summary: 'Checkout current cart',
+          summary: 'Checkout current cart (does not change stock)',
+          description:
+            'Stock is reserved during add-to-cart and is not decremented again at checkout.',
           security: [{ bearerAuth: [] }],
           responses: {
             200: {
@@ -397,6 +402,7 @@ const openapiSpec = swaggerJsdoc({
               },
             },
             401: { description: 'Unauthorized' },
+            409: { description: 'Cart contains unavailable product' },
           },
         },
       },

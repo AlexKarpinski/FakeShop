@@ -120,6 +120,36 @@ curl -X POST http://localhost:4000/cart/checkout \
   -H "Authorization: Bearer $USER_TOKEN"
 ```
 
+Add the same item twice (qty increments, not replaces):
+
+```bash
+curl -X POST http://localhost:4000/cart/items \
+  -H "Authorization: Bearer $USER_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"productId":"<PRODUCT_ID>","qty":1}'
+
+curl -X POST http://localhost:4000/cart/items \
+  -H "Authorization: Bearer $USER_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"productId":"<PRODUCT_ID>","qty":1}'
+```
+
+If stock is insufficient, add-to-cart returns:
+
+```json
+{"error":"Not enough stock"}
+```
+
+with status `409`.
+
+Cart reservation model:
+
+- Stock is reserved when calling `POST /cart/items` (product `inStock` decreases immediately).
+- Removing an item with `DELETE /cart/items/:productId` releases reserved stock.
+- Checkout clears cart and writes audit log; stock is not changed again at checkout.
+- `GET /cart` omits deleted/unavailable products from the response items list.
+- If checkout finds unavailable products in cart, it returns `409` and does not clear cart.
+
 ### Product discovery queries
 
 Search by name:
